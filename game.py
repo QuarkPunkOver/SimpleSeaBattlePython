@@ -461,8 +461,11 @@ class SeaBattle:
     def start_battle(self):
         if self.game_mode == "bot":
             self.enemy_field.randomize_ships()
-            self.my_turn = random.choice([True, False])
+            self.my_turn = True
+            self.bot_thinking = False
             self.state = GameState.BATTLE
+            if self.debug_mode:
+                print("[DEBUG] Битва с ботом началась. Первый ход у игрока")
     
     def bot_turn(self):
         available = []
@@ -508,13 +511,16 @@ class SeaBattle:
                         row, col = random.choice(available)
             
             result = self.player_field.receive_shot(row, col)
+            self.debug_print(f"Бот стреляет по [{row},{col}]: {'Попадание' if result else 'Промах'}")
             
             if result:
                 self.bot_thinking = True
                 self.bot_timer = pygame.time.get_ticks() + 500
+                self.debug_print("Бот продолжает ход (попадание)")
             else:
                 self.my_turn = True
                 self.bot_thinking = False
+                self.debug_print("Ход переходит к игроку")
     
     def handle_battle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -530,12 +536,16 @@ class SeaBattle:
                         if self.enemy_field.grid[row][col] not in [CellState.HIT, CellState.MISS, CellState.DESTROYED]:
                             result = self.enemy_field.receive_shot(row, col)
                             if result is not None:
+                                self.debug_print(f"Выстрел по [{row},{col}]: {'Попадание' if result else 'Промах'}")
+                                
                                 if result:
                                     self.my_turn = True
+                                    self.debug_print("Игрок продолжает ход (попадание)")
                                 else:
                                     self.my_turn = False
                                     self.bot_thinking = True
                                     self.bot_timer = pygame.time.get_ticks() + 500
+                                    self.debug_print("Ход переходит к боту")
                     else:
                         if self.enemy_field.grid[row][col] not in [CellState.HIT, CellState.MISS, CellState.DESTROYED]:
                             self.network.send_data({"type": "shot", "row": row, "col": col})
@@ -827,10 +837,17 @@ class SeaBattle:
         self.player_field.draw(self.screen, show_ships=True)
         self.enemy_field.draw(self.screen, show_ships=Debug_status)
         
-        if self.my_turn:
-            turn_text = self.font.render("Ваш ход", True, colors["ship"])
+        if self.game_mode == "bot":
+            if self.my_turn:
+                turn_text = self.font.render("Ваш ход", True, colors["ship"])
+            else:
+                turn_text = self.font.render("Ход бота...", True, colors["hit"])
         else:
-            turn_text = self.font.render("Ход противника", True, colors["hit"])
+            if self.my_turn:
+                turn_text = self.font.render("Ваш ход", True, colors["ship"])
+            else:
+                turn_text = self.font.render("Ход противника", True, colors["hit"])
+                
         turn_rect = turn_text.get_rect(center=(WINDOW_WIDTH//2, 50))
         self.screen.blit(turn_text, turn_rect)
     
