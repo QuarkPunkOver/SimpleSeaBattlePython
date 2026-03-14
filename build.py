@@ -11,8 +11,8 @@ version_info = """
 #
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 1),
-    prodvers=(1, 0, 0, 1),
+    filevers=(1, 0, 0, 2),
+    prodvers=(1, 0, 0, 2),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -27,12 +27,12 @@ VSVersionInfo(
         u'040904B0',
         [StringStruct(u'CompanyName', u'funDAVEover'),
         StringStruct(u'FileDescription', u'Морской бой - сетевая игра'),
-        StringStruct(u'FileVersion', u'1.0.0.1'),
+        StringStruct(u'FileVersion', u'1.0.0.2'),
         StringStruct(u'InternalName', u'SeaBattle'),
         StringStruct(u'LegalCopyright', u'Copyright 2026 funDAVEover'),
         StringStruct(u'OriginalFilename', u'SeaBattle.exe'),
         StringStruct(u'ProductName', u'SeaBattle'),
-        StringStruct(u'ProductVersion', u'1.0.0.1')])
+        StringStruct(u'ProductVersion', u'1.0.0.2')])
       ]),
     VarFileInfo([VarStruct(u'Translation', [0x409, 1200])])
   ]

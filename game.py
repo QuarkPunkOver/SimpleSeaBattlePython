@@ -461,13 +461,17 @@ class SeaBattle:
     def start_battle(self):
         if self.game_mode == "bot":
             self.enemy_field.randomize_ships()
-            self.my_turn = True
-            self.bot_thinking = False
+            self.my_turn = random.choice([True, False])
+            self.bot_thinking = not self.my_turn
+            self.bot_timer = pygame.time.get_ticks() + 500
             self.state = GameState.BATTLE
             if self.debug_mode:
-                print("[DEBUG] Битва с ботом началась. Первый ход у игрока")
+                print(f"[DEBUG] Битва с ботом началась. Первый ход у {'игрока' if self.my_turn else 'бота'}")
     
     def bot_turn(self):
+        if not self.bot_thinking or self.my_turn:
+            return
+            
         available = []
         for r in range(FIELD_SIZE):
             for c in range(FIELD_SIZE):
@@ -515,11 +519,12 @@ class SeaBattle:
             
             if result:
                 self.bot_thinking = True
+                self.my_turn = False
                 self.bot_timer = pygame.time.get_ticks() + 500
                 self.debug_print("Бот продолжает ход (попадание)")
             else:
-                self.my_turn = True
                 self.bot_thinking = False
+                self.my_turn = True
                 self.debug_print("Ход переходит к игроку")
     
     def handle_battle_event(self, event):
@@ -540,6 +545,7 @@ class SeaBattle:
                                 
                                 if result:
                                     self.my_turn = True
+                                    self.bot_thinking = False
                                     self.debug_print("Игрок продолжает ход (попадание)")
                                 else:
                                     self.my_turn = False
@@ -569,7 +575,12 @@ class SeaBattle:
         if self.state == GameState.WAITING_PLAYER and self.game_mode == "network":
             if self.player_ready and self.opponent_ships_received:
                 self.start_network_battle()
-            
+
+            if self.state == GameState.BATTLE and self.game_mode == "bot":
+                if self.bot_thinking and not self.my_turn:
+                    if pygame.time.get_ticks() >= self.bot_timer:
+                        self.bot_turn()
+
             if not self.network.is_server and self.player_ready and not self.opponent_ready:
                 if pygame.time.get_ticks() % 3000 < 50:
                     ships_data = self.player_field.get_ships_data()
